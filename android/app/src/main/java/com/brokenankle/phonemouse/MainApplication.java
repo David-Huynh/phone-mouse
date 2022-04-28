@@ -1,4 +1,5 @@
 package com.brokenankle.phonemouse;
+import expo.modules.devlauncher.DevLauncherController;
 
 import android.app.Application;
 import android.content.Context;
@@ -35,7 +36,6 @@ public class MainApplication extends Application implements ReactApplication {
       List<ReactPackage> packages = new PackageList(this).getPackages();
       // Packages that cannot be autolinked yet can be added manually here, for example:
       // packages.add(new MyReactNativePackage());
-      packages.add(new RNSerialportPackage());
       return packages;
     }
 
@@ -55,6 +55,7 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
 
+    DevLauncherController.initialize(this, getReactNativeHost());
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
     ApplicationLifecycleDispatcher.onApplicationCreate(this);
   }

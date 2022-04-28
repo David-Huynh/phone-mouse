@@ -1,56 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Gyroscope } from 'expo-sensors';
+import React from 'react';
+import { StyleSheet, Text, View, PermissionsAndroid  } from 'react-native';
+import Zeroconf from 'react-native-zeroconf';
 
-import { RNSerialport, definitions, actions } from "react-native-serialport";
-import { DeviceEventEmitter } from "react-native";
-
-const GYROSCOPE_UPDATE_INTERVAL = 10;
+import GyroscopeComponent from './src/components/gyroscope';
 
 export default function App() {
-  const [data, setData] = useState({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
-  const [subscription, setSubscription] = useState(null);
+  const [services, setServices] = React.useState(null)
+  
+  const zeroconf = new Zeroconf()
 
-  const _subscribe = () => {
-    setSubscription(
-      Gyroscope.addListener(gyroscopeData => {
-        setData(gyroscopeData);
-      })
-    );
-
-    Gyroscope.setUpdateInterval(GYROSCOPE_UPDATE_INTERVAL);
-  };
-
-
-  const _unsubscribe = () => {
-    subscription && subscription.remove();
-    setSubscription(null);
-  };
-
-  useEffect(() => {
-    // Subscribes to gyroscope events only if sensor exists
-    if (Gyroscope.isAvailableAsync()) {
-      _subscribe();
+  
+  zeroconf.on('resolved', (service) => {
+    if (service.name === 'PhoneServer' && services === null) {
+      console.log('resolved', service)
+      setServices(service)
     }
-    return () => _unsubscribe();
+  })
+
+  React.useEffect(() => {
+    PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.ACCESS_NETWORK_STATE,
+      PermissionsAndroid.PERMISSIONS.ACCESS_WIFI_STATE,
+      PermissionsAndroid.PERMISSIONS.CHANGE_WIFI_MULTICAST_STATE,
+    ).then(granted => {
+      if (granted) {
+        console.log('Permission Granted');
+        zeroconf.scan('http', 'tcp', 'local.')
+      } else {
+        console.log('Permission denied');
+      }
+    }
+    );
   }, []);
-  const { x, y, z } = data;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Gyroscope:</Text>
-      <Text >
-        x: {x.toFixed(2)} y: {y.toFixed(2)} z: {z.toFixed(2)}
-      </Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={subscription ? _unsubscribe : _subscribe} style={styles.button}>
-          <Text style={styles.text}>{subscription ? 'On' : 'Off'}</Text>
-        </TouchableOpacity>
-      </View>
+      { services === null ? <Text> Desktop not found </Text> : <GyroscopeComponent services={services}/>}
     </View>
   );
 }
@@ -61,20 +48,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 10,
-  },
-  text: {
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    marginTop: 30,
-  },
-  button: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#eee',
-    padding: 10,
   },
 });

@@ -16,16 +16,44 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "plugins": [
+      ["@config-plugins/react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Allow phone to connect to bluetooth devices",
+          "bluetoothPeripheralPermission": "Allow phone to connect to bluetooth devices"
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brokenankle.phonemouse"
+      "bundleIdentifier": "com.brokenankle.phonemouse",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "This app uses your phone's bluetooth/websockets to connect to pc and send data.",
+        "NSBonjourServices": [
+          {
+            "NSXPrefix": "phone-mouse",
+            "NSRole": "server"
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.brokenankle.phonemouse"
+      "package": "com.brokenankle.phonemouse",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.CHANGE_WIFI_MULTICAST_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
